@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Presupuesto Declaración de la Renta</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green: #1a7a5e;
+    --green-light: #e8f5f0;
+    --green-mid: #2ea87e;
+    --blue: #1a4fa8;
+    --blue-light: #e8f0fa;
+    --amber: #b06a00;
+    --amber-light: #fff3e0;
+    --red: #b82020;
+    --red-light: #fdeaea;
+    --text: #1a1a1a;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --bg: #f8f7f4;
+    --card: #ffffff;
+    --radius: 16px;
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 0 40px;
+  }
+
+  /* Header */
+  .header {
+    width: 100%;
+    background: var(--green);
+    color: white;
+    padding: 28px 24px 32px;
+    text-align: center;
+    position: relative;
+  }
+  .header-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0.75;
+    margin-bottom: 10px;
+  }
+  .header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    font-weight: 400;
+    line-height: 1.25;
+    margin-bottom: 6px;
+  }
+  .header p {
+    font-size: 13px;
+    opacity: 0.8;
+    font-weight: 300;
+  }
+  .header-wave {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 20px;
+    background: var(--bg);
+    border-radius: 20px 20px 0 0;
+  }
+
+  /* Container */
+  .container {
+    width: 100%;
+    max-width: 480px;
+    padding: 20px 16px 0;
+  }
+
+  /* Progress */
+  .progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .progress-track {
+    flex: 1;
+    height: 5px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--green);
+    border-radius: 99px;
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+  }
+  .progress-label {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+    min-width: 50px;
+    text-align: right;
+  }
+
+  /* Question card */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 24px 20px;
+    margin-bottom: 14px;
+    animation: slideUp 0.35s cubic-bezier(.4,0,.2,1);
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .q-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--green);
+    background: var(--green-light);
+    padding: 3px 10px;
+    border-radius: 99px;
+    margin-bottom: 14px;
+  }
+  .q-text {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.35;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+
+  /* Options */
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    background: white;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    text-align: left;
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .opt:active { transform: scale(0.98); }
+  .opt:hover { border-color: var(--green-mid); background: var(--green-light); }
+  .opt.selected {
+    border-color: var(--green);
+    background: var(--green-light);
+  }
+  .opt-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    flex-shrink: 0;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+  }
+  .opt.selected .opt-num {
+    background: var(--green);
+    border-color: var(--green);
+    color: white;
+  }
+  .opt-text {
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--text);
+    font-weight: 400;
+  }
+
+  /* Nav buttons */
+  .nav { display: flex; gap: 10px; margin-top: 6px; }
+  .btn-back {
+    flex: 0 0 auto;
+    padding: 14px 18px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    background: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-back:hover { background: var(--bg); }
+  .btn-next {
+    flex: 1;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 12px;
+    background: var(--green);
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s, opacity 0.2s;
+  }
+  .btn-next:disabled { opacity: 0.35; cursor: not-allowed; }
+  .btn-next:not(:disabled):hover { background: #145f48; }
+  .btn-next:not(:disabled):active { transform: scale(0.98); }
+
+  /* Result */
+  .result-wrap { animation: slideUp 0.4s cubic-bezier(.4,0,.2,1); }
+
+  .result-header {
+    text-align: center;
+    padding: 10px 0 20px;
+  }
+  .result-header .check {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--green-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+  }
+  .result-header .check svg { width: 26px; height: 26px; }
+  .result-header h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    font-weight: 400;
+    margin-bottom: 6px;
+  }
+  .result-header p {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .nivel-card {
+    border-radius: var(--radius);
+    padding: 22px 20px;
+    margin-bottom: 14px;
+    border: 2px solid transparent;
+  }
+  .nivel-card.n1 { background: var(--green-light); border-color: var(--green); }
+  .nivel-card.n2 { background: var(--blue-light); border-color: var(--blue); }
+  .nivel-card.n3 { background: var(--amber-light); border-color: var(--amber); }
+  .nivel-card.n4 { background: var(--red-light); border-color: var(--red); }
+
+  .nivel-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .nivel-badge {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 99px;
+  }
+  .n1 .nivel-badge { background: var(--green); color: white; }
+  .n2 .nivel-badge { background: var(--blue); color: white; }
+  .n3 .nivel-badge { background: var(--amber); color: white; }
+  .n4 .nivel-badge { background: var(--red); color: white; }
+
+  .nivel-precio {
+    font-family: 'DM Serif Display', serif;
+    font-size: 36px;
+    font-weight: 400;
+    line-height: 1;
+  }
+  .n1 .nivel-precio { color: var(--green); }
+  .n2 .nivel-precio { color: var(--blue); }
+  .n3 .nivel-precio { color: var(--amber); }
+  .n4 .nivel-precio { color: var(--red); }
+
+  .nivel-iva {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+    text-align: right;
+  }
+
+  .nivel-nombre {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    font-weight: 400;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .nivel-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* Incluye */
+  .incluye-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 14px;
+  }
+  .incluye-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .incluye-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 13.5px;
+    color: var(--text);
+    line-height: 1.45;
+  }
+  .incluye-item:last-child { margin-bottom: 0; }
+  .check-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--green-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .check-dot svg { width: 10px; height: 10px; }
+
+  /* CTA */
+  .cta-wrap { text-align: center; padding: 6px 0 0; }
+  .btn-wa {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 28px;
+    border-radius: 14px;
+    background: #25D366;
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  .btn-wa:hover { background: #1dbd5b; }
+  .btn-wa:active { transform: scale(0.98); }
+  .btn-wa svg { width: 22px; height: 22px; flex-shrink: 0; }
+
+  .btn-reiniciar {
+    display: inline-block;
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: underline;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    padding: 6px;
+  }
+
+  /* Todos los niveles al final */
+  .todos-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 20px 0 10px;
+    text-align: center;
+  }
+  .todos-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .mini-nivel {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 12px;
+  }
+  .mini-nivel-name { font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .mini-nivel-price { font-size: 16px; font-weight: 700; }
+  .mini-nivel-desc { color: var(--muted); font-size: 11px; margin-top: 2px; line-height: 1.4; }
+  .mn1 .mini-nivel-price { color: var(--green); }
+  .mn2 .mini-nivel-price { color: var(--blue); }
+  .mn3 .mini-nivel-price { color: var(--amber); }
+  .mn4 .mini-nivel-price { color: var(--red); }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 24px;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">Tu Gestoría</div>
+  <h1>¿Cuánto cuesta<br>tu declaración?</h1>
+  <p>Responde 5 preguntas y obtén tu presupuesto al instante</p>
+  <div class="header-wave"></div>
+</div>
+
+<div class="container">
+
+  <!-- QUIZ -->
+  <div id="quiz">
+    <div class="progress-wrap">
+      <div class="progress-track">
+        <div class="progress-fill" id="prog" style="width:0%"></div>
+      </div>
+      <div class="progress-label" id="prog-label">0 de 6</div>
+    </div>
+
+    <div class="card" id="q-card">
+      <div class="q-tag" id="q-tag">Pregunta 1</div>
+      <div class="q-text" id="q-text"></div>
+      <div class="options" id="opts"></div>
+    </div>
+
+    <div class="nav">
+      <button class="btn-back" id="btn-back" onclick="goBack()" style="display:none">← Atrás</button>
+      <button class="btn-next" id="btn-next" onclick="goNext()" disabled>Continuar →</button>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result" style="display:none" class="result-wrap">
+    <div class="result-header">
+      <div class="check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#1a7a5e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h2>¡Tu presupuesto está listo!</h2>
+      <p>Basado en tu situación fiscal de 2025</p>
+    </div>
+
+    <div class="nivel-card" id="r-card">
+      <div class="nivel-top">
+        <div>
+          <div class="nivel-badge" id="r-badge"></div>
+        </div>
+        <div style="text-align:right">
+          <div class="nivel-precio" id="r-precio"></div>
+          <div class="nivel-iva">IVA incluido</div>
+        </div>
+      </div>
+      <div class="nivel-nombre" id="r-nombre"></div>
+      <div class="nivel-desc" id="r-desc"></div>
+    </div>
+
+    <div class="incluye-card">
+      <div class="incluye-title">Siempre incluido</div>
+      <div class="incluye-item">
+        <div class="check-dot"><svg viewBox="0 0 12 12" fill="none" stroke="#1a7a5e" stroke-width="2" stroke-linecap="round"><polyline points="10 3 5 9 2 6"/></svg></div>
+        Revisión completa del borrador de Hacienda
+      </div>
+      <div class="incluye-item">
+        <div class="check-dot"><svg viewBox="0 0 12 12" fill="none" stroke="#1a7a5e" stroke-width="2" stroke-linecap="round"><polyline points="10 3 5 9 2 6"/></svg></div>
+        Aplicación de todas las deducciones estatales y autonómicas
+      </div>
+      <div class="incluye-item">
+        <div class="check-dot"><svg viewBox="0 0 12 12" fill="none" stroke="#1a7a5e" stroke-width="2" stroke-linecap="round"><polyline points="10 3 5 9 2 6"/></svg></div>
+        Presentación telemática ante la AEAT
+      </div>
+      <div class="incluye-item">
+        <div class="check-dot"><svg viewBox="0 0 12 12" fill="none" stroke="#1a7a5e" stroke-width="2" stroke-linecap="round"><polyline points="10 3 5 9 2 6"/></svg></div>
+        Atención personalizada por WhatsApp
+      </div>
+    </div>
+
+    <div class="cta-wrap">
+      <a class="btn-wa" id="btn-wa" href="#" target="_blank">
+        <svg viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Contactar por WhatsApp
+      </a>
+      <button class="btn-reiniciar" onclick="reiniciar()">Volver a empezar</button>
+    </div>
+
+    <div class="todos-title">Todos los niveles</div>
+    <div class="todos-grid">
+      <div class="mini-nivel mn1">
+        <div class="mini-nivel-name">Nivel 1 — Básica</div>
+        <div class="mini-nivel-price">50 €</div>
+        <div class="mini-nivel-desc">1 pagador, sin deducciones complejas</div>
+      </div>
+      <div class="mini-nivel mn2">
+        <div class="mini-nivel-name">Nivel 2 — Media</div>
+        <div class="mini-nivel-price">90 €</div>
+        <div class="mini-nivel-desc">2 pagadores, alquiler, plan de pensiones</div>
+      </div>
+      <div class="mini-nivel mn3">
+        <div class="mini-nivel-name">Nivel 3 — Avanzada</div>
+        <div class="mini-nivel-price">140 €</div>
+        <div class="mini-nivel-desc">Autónomo, inversiones, inmuebles en alquiler</div>
+      </div>
+      <div class="mini-nivel mn4">
+        <div class="mini-nivel-name">Nivel 4 — Compleja</div>
+        <div class="mini-nivel-price">200 €</div>
+        <div class="mini-nivel-desc">Extranjero, cripto, herencia, varios inmuebles</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      Presupuesto orientativo. El precio definitivo se confirmará<br>tras revisar tu documentación completa.<br><br>
+      Campaña Renta 2025 · Presentación hasta el 30 de junio de 2026
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── CONFIGURA AQUÍ TU NÚMERO DE WHATSAPP ──
+  const WA_NUMERO = '34600000000'; // Cambia por tu número real (sin + ni espacios)
+  // ──────────────────────────────────────────
+
+  const preguntas = [
+    {
+      texto: '¿Tienes ingresos como autónomo o por actividad económica?',
+      opciones: [
+        'No, solo soy asalariado/a',
+        'Sí, en módulos (estimación objetiva)',
+        'Sí, en estimación directa (con facturas y gastos)'
+      ],
+      puntos: [1, 2, 4]
+    },
+    {
+      texto: '¿Tienes inmuebles alquilados o propiedades adicionales?',
+      opciones: [
+        'No, solo mi vivienda habitual y otra segunda vivienda no alquilada (o no tengo)',
+        'Tengo un piso o local en alquiler',
+        'Tengo varios inmuebles, arrendados o no'
+      ],
+      puntos: [1, 2, 5]
+    },
+    {
+      texto: '¿Has tenido ganancias o pérdidas con inversiones en 2025?',
+      opciones: [
+        'No, ninguna',
+        'Sí, venta de fondos, acciones o ETFs pero menos de 10 operaciones en total',
+        'Venta de vivienda u otro inmueble',
+        'Sí, venta de fondos, criptos, acciones o ETFs pero más de 10 operaciones en total'
+      ],
+      puntos: [1, 2, 3, 9]
+    },
+    {
+      texto: '¿Tienes ingresos, cuentas o propiedades fuera de España?',
+      opciones: [
+        'No, todo es en España',
+        'Trabajo aquí pero mi empresa es extranjera',
+        'Sí, tengo cuentas, ingresos o propiedades en otro país'
+      ],
+      puntos: [1, 5, 9]
+    },
+    {
+      texto: '¿Necesitas aplicar estas deducciones?',
+      opciones: [
+        'No, solo las habituales',
+        'Deducción por alquiler o adquisición de vivienda',
+        'Plan de pensiones, donaciones, discapacidad, autonómicas sencillas',
+        'Herencia, sucesión, placas solares o varias de las anteriores'
+      ],
+      puntos: [1, 2, 3, 9]
+    }
+  ];
+
+  const niveles = [
+    {
+      nombre: 'Declaración básica',
+      badge: 'Nivel 1',
+      precio: '50 €',
+      desc: 'Tu declaración es sencilla: asalariado/a sin rentas complejas ni deducciones especiales. Podremos tramitarla con rapidez.',
+      clase: 'n1',
+      maxPuntos: 8
+    },
+    {
+      nombre: 'Declaración media',
+      badge: 'Nivel 2',
+      precio: '90 €',
+      desc: 'Tu renta incluye algún elemento adicional como un inmueble en alquiler, deducciones por vivienda o plan de pensiones. Requiere una revisión más detallada.',
+      clase: 'n2',
+      maxPuntos: 11
+    },
+    {
+      nombre: 'Declaración avanzada',
+      badge: 'Nivel 3',
+      precio: '140 €',
+      desc: 'Tu situación fiscal es compleja: puede incluir actividad como autónomo, inversiones, varios inmuebles u otras rentas. Le dedicaremos el tiempo que merece.',
+      clase: 'n3',
+      maxPuntos: 19
+    },
+    {
+      nombre: 'Declaración compleja',
+      badge: 'Nivel 4',
+      precio: '200 €',
+      desc: 'Tu declaración requiere análisis fiscal en profundidad: rentas del extranjero, criptomonedas, herencias, placas solares, varios inmuebles... Nuestro asesor se encargará de todo.',
+      clase: 'n4',
+      maxPuntos: 99
+    }
+  ];
+
+  let actual = 0;
+  let puntos = 0;
+  let seleccionActual = null;
+  let historial = []; // {puntos, seleccion}
+
+  function render() {
+    const p = preguntas[actual];
+    document.getElementById('q-tag').textContent = `Pregunta ${actual + 1} de ${preguntas.length}`;
+    document.getElementById('q-text').textContent = p.texto;
+
+    const prog = Math.round(((actual) / preguntas.length) * 100);
+    document.getElementById('prog').style.width = prog + '%';
+    document.getElementById('prog-label').textContent = `${actual} de ${preguntas.length}`;
+
+    const opts = document.getElementById('opts');
+    opts.innerHTML = '';
+    p.opciones.forEach((op, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'opt';
+      btn.innerHTML = `<span class="opt-num">${i + 1}</span><span class="opt-text">${op}</span>`;
+      btn.onclick = () => elegir(i, btn);
+      opts.appendChild(btn);
+    });
+
+    seleccionActual = null;
+    document.getElementById('btn-next').disabled = true;
+    document.getElementById('btn-back').style.display = actual === 0 ? 'none' : 'inline-block';
+
+    // animate card
+    const card = document.getElementById('q-card');
+    card.style.animation = 'none';
+    card.offsetHeight;
+    card.style.animation = 'slideUp 0.35s cubic-bezier(.4,0,.2,1)';
+  }
+
+  function elegir(idx, btn) {
+    document.querySelectorAll('.opt').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    seleccionActual = idx;
+    document.getElementById('btn-next').disabled = false;
+  }
+
+  function goNext() {
+    if (seleccionActual === null) return;
+    const p = preguntas[actual];
+    historial.push({ puntos: p.puntos[seleccionActual], seleccion: seleccionActual });
+    puntos += p.puntos[seleccionActual];
+    actual++;
+    if (actual < preguntas.length) {
+      render();
+    } else {
+      mostrarResultado();
+    }
+  }
+
+  function goBack() {
+    if (actual === 0) return;
+    const prev = historial.pop();
+    puntos -= prev.puntos;
+    actual--;
+    render();
+    // restore previous selection
+    setTimeout(() => {
+      const btns = document.querySelectorAll('.opt');
+      if (btns[prev.seleccion]) {
+        btns[prev.seleccion].classList.add('selected');
+        seleccionActual = prev.seleccion;
+        document.getElementById('btn-next').disabled = false;
+      }
+    }, 50);
+  }
+
+  function mostrarResultado() {
+    document.getElementById('prog').style.width = '100%';
+    document.getElementById('prog-label').textContent = `${preguntas.length} de ${preguntas.length}`;
+
+    const nivel = niveles.find(n => puntos <= n.maxPuntos);
+
+    document.getElementById('r-card').className = 'nivel-card ' + nivel.clase;
+    document.getElementById('r-badge').textContent = nivel.badge;
+    document.getElementById('r-precio').textContent = nivel.precio;
+    document.getElementById('r-nombre').textContent = nivel.nombre;
+    document.getElementById('r-desc').textContent = nivel.desc;
+
+    const msg = encodeURIComponent(`Hola! Acabo de hacer la encuesta de declaración de la Renta y me ha salido ${nivel.badge} — ${nivel.nombre} (${nivel.precio}). Me gustaría confirmar el presupuesto y empezar con el trámite. ¡Gracias!`);
+    document.getElementById('btn-wa').href = `https://wa.me/${WA_NUMERO}?text=${msg}`;
+
+    document.getElementById('quiz').style.display = 'none';
+    document.getElementById('result').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function reiniciar() {
+    actual = 0;
+    puntos = 0;
+    seleccionActual = null;
+    historial = [];
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('quiz').style.display = 'block';
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  render();
+</script>
+</body>
+</html>
